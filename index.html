@@ -1,0 +1,1762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSA Visualizer</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: #2a2a3e;
+    --accent: #7c3aed;
+    --accent2: #06b6d4;
+    --accent3: #10b981;
+    --accent4: #f59e0b;
+    --accent5: #ef4444;
+    --accent6: #ec4899;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #64748b;
+    --glow: rgba(124,58,237,0.3);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ==================== HOME PAGE ==================== */
+  #home-page { display: block; }
+  #topic-page { display: none; }
+
+  /* NAV */
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem 3rem;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,10,15,0.95);
+    backdrop-filter: blur(12px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-size: 1.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.02em;
+  }
+
+  .logo span { font-family: 'Space Mono', monospace; }
+
+  nav ul { display: flex; gap: 2rem; list-style: none; }
+  nav a { color: var(--text2); text-decoration: none; font-size: 0.9rem; font-weight: 600; letter-spacing: 0.05em; transition: color 0.2s; }
+  nav a:hover { color: var(--accent2); }
+
+  /* HERO */
+  .hero {
+    padding: 5rem 3rem 4rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -200px; left: 50%; transform: translateX(-50%);
+    width: 800px; height: 800px;
+    background: radial-gradient(circle, rgba(124,58,237,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-tag {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--accent2);
+    border: 1px solid var(--accent2);
+    padding: 0.3rem 0.8rem;
+    border-radius: 2px;
+    letter-spacing: 0.1em;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero h1 em {
+    font-style: normal;
+    background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hero p {
+    font-size: 1.15rem;
+    color: var(--text2);
+    max-width: 560px;
+    margin: 0 auto 2.5rem;
+    line-height: 1.7;
+    font-weight: 400;
+  }
+
+  /* TOPICS GRID */
+  .topics-section {
+    padding: 2rem 3rem 5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--text3);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .topics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .topic-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .topic-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.3s;
+    border-radius: 12px;
+  }
+
+  .topic-card:hover {
+    transform: translateY(-4px);
+    border-color: transparent;
+  }
+
+  .topic-card:hover::before { opacity: 1; }
+
+  /* Card colors */
+  .card-arrays { --c: #7c3aed; --c2: #5b21b6; }
+  .card-binary-search { --c: #06b6d4; --c2: #0284c7; }
+  .card-stacks { --c: #10b981; --c2: #059669; }
+  .card-queue { --c: #f59e0b; --c2: #d97706; }
+  .card-trees { --c: #ef4444; --c2: #dc2626; }
+  .card-linked-lists { --c: #ec4899; --c2: #db2777; }
+
+  .topic-card::before { background: linear-gradient(135deg, var(--c), var(--c2)); }
+  .topic-card:hover { box-shadow: 0 0 40px rgba(0,0,0,0.5); }
+
+  .topic-card:hover .card-icon,
+  .topic-card:hover .card-title,
+  .topic-card:hover .card-desc,
+  .topic-card:hover .card-tag { position: relative; z-index: 1; }
+
+  .topic-card:hover .card-title { color: #fff; }
+  .topic-card:hover .card-desc { color: rgba(255,255,255,0.8); }
+
+  .card-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1.2rem;
+    display: block;
+    filter: grayscale(0.2);
+  }
+
+  .card-badge {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 2px;
+    margin-bottom: 1rem;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    color: #fff;
+    background: var(--c);
+  }
+
+  .card-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin-bottom: 0.7rem;
+    letter-spacing: -0.02em;
+    transition: color 0.3s;
+  }
+
+  .card-desc {
+    font-size: 0.9rem;
+    color: var(--text2);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    transition: color 0.3s;
+  }
+
+  .card-cta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--c);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    transition: gap 0.2s;
+  }
+
+  .topic-card:hover .card-cta {
+    gap: 0.8rem;
+    color: #fff;
+  }
+
+  .card-cta-arrow { font-size: 1rem; }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem 3rem;
+    text-align: center;
+    color: var(--text3);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+  }
+
+  /* ==================== TOPIC PAGE ==================== */
+  #topic-page {
+    min-height: 100vh;
+  }
+
+  .topic-nav {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.2rem 2rem;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,10,15,0.97);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .back-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    transition: all 0.2s;
+  }
+
+  .back-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .topic-nav-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .topic-container {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    min-height: calc(100vh - 61px);
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    border-right: 1px solid var(--border);
+    padding: 2rem 1.5rem;
+    background: var(--surface);
+    position: sticky;
+    top: 61px;
+    height: calc(100vh - 61px);
+    overflow-y: auto;
+  }
+
+  .sidebar-section-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text3);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .sidebar-section-title:first-child { margin-top: 0; }
+
+  .op-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.6rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    transition: all 0.2s;
+  }
+
+  .op-btn:hover, .op-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  .speed-control { margin-top: 1.5rem; }
+  .speed-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text3);
+    letter-spacing: 0.1em;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+  }
+
+  input[type=range] {
+    width: 100%;
+    accent-color: var(--accent);
+  }
+
+  /* MAIN VISUALIZER */
+  .viz-main {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    background: var(--bg);
+  }
+
+  .viz-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .viz-title { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.03em; }
+  .viz-subtitle { color: var(--text2); font-size: 0.9rem; margin-top: 0.3rem; line-height: 1.5; }
+
+  .complexity-badges { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.8rem; }
+  .badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 3px;
+    border: 1px solid;
+    letter-spacing: 0.05em;
+  }
+
+  .badge-time { color: var(--accent2); border-color: var(--accent2); }
+  .badge-space { color: var(--accent3); border-color: var(--accent3); }
+
+  /* CANVAS AREA */
+  .canvas-area {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    min-height: 320px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* INPUT ROW */
+  .input-row {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .input-field {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.6rem 1rem;
+    border-radius: 6px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85rem;
+    flex: 1;
+    min-width: 180px;
+    transition: border-color 0.2s;
+  }
+
+  .input-field:focus { outline: none; border-color: var(--accent); }
+
+  .btn {
+    padding: 0.6rem 1.4rem;
+    border-radius: 6px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+  }
+
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #6d28d9; transform: translateY(-1px); }
+  .btn-secondary { background: var(--surface); border: 1px solid var(--border); color: var(--text); }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-danger { background: var(--accent5); color: #fff; }
+  .btn-danger:hover { background: #b91c1c; }
+
+  /* LOG */
+  .log-area {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--text2);
+    min-height: 60px;
+    max-height: 100px;
+    overflow-y: auto;
+    line-height: 1.6;
+  }
+
+  /* ===================== ARRAY VIZ ===================== */
+  .array-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 260px;
+    padding: 1rem 0 0;
+    width: 100%;
+  }
+
+  .arr-bar {
+    flex: 1;
+    background: linear-gradient(180deg, var(--accent) 0%, #5b21b6 100%);
+    border-radius: 4px 4px 0 0;
+    transition: height 0.3s, background 0.3s;
+    position: relative;
+    min-width: 18px;
+  }
+
+  .arr-bar.highlight { background: linear-gradient(180deg, var(--accent2) 0%, #0284c7 100%); }
+  .arr-bar.found { background: linear-gradient(180deg, var(--accent3) 0%, #059669 100%); }
+  .arr-bar.swapping { background: linear-gradient(180deg, var(--accent4) 0%, #d97706 100%); }
+  .arr-bar.comparing { background: linear-gradient(180deg, var(--accent5) 0%, #dc2626 100%); }
+
+  .arr-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--text3);
+    text-align: center;
+    margin-top: 4px;
+  }
+
+  /* ===================== LINKED LIST VIZ ===================== */
+  .ll-canvas {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+    width: 100%;
+    min-height: 80px;
+    padding: 1rem;
+  }
+
+  .ll-node {
+    display: flex;
+    align-items: center;
+    animation: popIn 0.3s ease;
+  }
+
+  @keyframes popIn {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .ll-box {
+    background: var(--surface2);
+    border: 2px solid var(--accent6);
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--accent6);
+    min-width: 60px;
+    text-align: center;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .ll-box .node-val { font-size: 1rem; }
+  .ll-box .node-lbl { font-size: 0.55rem; color: var(--text3); letter-spacing: 0.05em; }
+
+  .ll-box.head-node { border-color: var(--accent2); color: var(--accent2); }
+  .ll-box.tail-node { border-color: var(--accent3); color: var(--accent3); }
+  .ll-box.active { border-color: var(--accent4); color: var(--accent4); box-shadow: 0 0 15px rgba(245,158,11,0.4); }
+
+  .ll-arrow {
+    display: flex;
+    align-items: center;
+    padding: 0 0.3rem;
+    color: var(--text3);
+    font-size: 1.2rem;
+  }
+
+  .ll-null {
+    background: var(--surface2);
+    border: 2px dashed var(--text3);
+    border-radius: 8px;
+    padding: 0.6rem 0.8rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text3);
+  }
+
+  /* ===================== STACK VIZ ===================== */
+  .stack-canvas {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 0;
+    min-height: 200px;
+    justify-content: flex-end;
+    padding-bottom: 1rem;
+  }
+
+  .stack-item {
+    width: 200px;
+    background: linear-gradient(135deg, var(--accent3), #059669);
+    color: #fff;
+    font-family: 'Space Mono', monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    text-align: center;
+    padding: 0.7rem;
+    border-bottom: 2px solid rgba(0,0,0,0.3);
+    animation: slideDown 0.3s ease;
+    position: relative;
+  }
+
+  .stack-item:first-child {
+    border-radius: 8px 8px 0 0;
+    background: linear-gradient(135deg, var(--accent2), #0284c7);
+  }
+
+  .stack-item:last-child { border-radius: 0 0 8px 8px; border-bottom: none; }
+  .stack-item:only-child { border-radius: 8px; border-bottom: none; }
+
+  @keyframes slideDown {
+    from { transform: translateY(-30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .stack-top-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--accent2);
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+    text-align: right;
+    padding-right: 0.5rem;
+    width: 200px;
+  }
+
+  .stack-base {
+    width: 220px;
+    height: 8px;
+    background: var(--border);
+    border-radius: 0 0 4px 4px;
+  }
+
+  /* ===================== QUEUE VIZ ===================== */
+  .queue-canvas {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    width: 100%;
+    overflow-x: auto;
+    padding: 1rem 0;
+    min-height: 120px;
+  }
+
+  .queue-labels {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text3);
+    letter-spacing: 0.08em;
+    margin-bottom: 0.5rem;
+  }
+
+  .queue-item {
+    background: linear-gradient(135deg, var(--accent4), #d97706);
+    color: #000;
+    font-family: 'Space Mono', monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 1rem 1.5rem;
+    border-right: 3px solid rgba(0,0,0,0.2);
+    animation: slideRight 0.3s ease;
+    min-width: 70px;
+    text-align: center;
+  }
+
+  .queue-item:first-child { border-radius: 8px 0 0 8px; background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
+  .queue-item:last-child { border-radius: 0 8px 8px 0; border-right: none; background: linear-gradient(135deg, #f59e0b, #d97706); }
+  .queue-item:only-child { border-radius: 8px; border-right: none; }
+
+  @keyframes slideRight {
+    from { transform: translateX(30px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  /* ===================== TREE VIZ ===================== */
+  .tree-canvas {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    overflow: auto;
+  }
+
+  .tree-canvas svg {
+    width: 100%;
+    height: 280px;
+  }
+
+  .tree-node circle { fill: var(--surface2); stroke: var(--accent5); stroke-width: 2.5; transition: all 0.3s; }
+  .tree-node.highlighted circle { fill: var(--accent5); }
+  .tree-node.visited circle { fill: var(--accent3); stroke: var(--accent3); }
+  .tree-node text { fill: var(--text); font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; dominant-baseline: middle; text-anchor: middle; pointer-events: none; }
+  .tree-edge { stroke: var(--border); stroke-width: 2; transition: stroke 0.3s; }
+  .tree-edge.active-edge { stroke: var(--accent5); }
+
+  /* ===================== BINARY SEARCH VIZ ===================== */
+  .bs-row {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    flex-wrap: wrap;
+    width: 100%;
+    justify-content: center;
+    padding: 1rem;
+  }
+
+  .bs-cell {
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.95rem;
+    font-weight: 700;
+    border: 2px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    transition: all 0.4s;
+    position: relative;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .bs-cell .cell-val { font-size: 0.95rem; }
+  .bs-cell .cell-idx { font-size: 0.55rem; color: var(--text3); }
+
+  .bs-cell.active-range { border-color: var(--accent2); background: rgba(6,182,212,0.1); }
+  .bs-cell.mid { border-color: var(--accent4); background: rgba(245,158,11,0.2); color: var(--accent4); }
+  .bs-cell.found { border-color: var(--accent3); background: rgba(16,185,129,0.2); color: var(--accent3); }
+  .bs-cell.eliminated { opacity: 0.3; }
+
+  /* ==================== RESPONSIVE ==================== */
+  @media (max-width: 768px) {
+    nav { padding: 1rem 1.5rem; }
+    nav ul { display: none; }
+    .hero { padding: 3rem 1.5rem 2.5rem; }
+    .topics-section { padding: 1rem 1.5rem 3rem; }
+    .topic-container { grid-template-columns: 1fr; }
+    .sidebar { position: static; height: auto; }
+  }
+
+  /* Pulse animation for found elements */
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 10px var(--accent3); }
+    50% { box-shadow: 0 0 30px var(--accent3), 0 0 60px rgba(16,185,129,0.3); }
+  }
+
+  .pulse { animation: pulse-glow 1s ease infinite; }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    color: var(--text3);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85rem;
+  }
+
+  .empty-state .empty-icon { font-size: 3rem; margin-bottom: 1rem; display: block; }
+
+  .traversal-order {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+  }
+
+  .trav-step {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--accent3);
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    animation: popIn 0.3s ease both;
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== HOME PAGE ==================== -->
+<div id="home-page">
+  <nav>
+    <div class="logo">DSA<span>Viz</span></div>
+    <ul>
+      <li><a href="#">Topics</a></li>
+      <li><a href="#">Complexity</a></li>
+      <li><a href="#">About</a></li>
+    </ul>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-tag">// INTERACTIVE LEARNING TOOL</div>
+    <h1>Visualize<br><em>Data Structures</em><br>& Algorithms</h1>
+    <p>Step through algorithms frame by frame. Watch data structures evolve in real-time. Build intuition through visualization.</p>
+  </section>
+
+  <section class="topics-section">
+    <div class="section-title">Choose a Topic to Explore</div>
+    <div class="topics-grid">
+
+      <div class="topic-card card-arrays" onclick="openTopic('arrays')">
+        <span class="card-icon">📊</span>
+        <div class="card-badge">LINEAR</div>
+        <div class="card-title">Arrays</div>
+        <div class="card-desc">Insert, delete, search, and sort elements. Watch sorting algorithms animate step-by-step with visual bars.</div>
+        <div class="card-cta"><span>Explore</span> <span class="card-cta-arrow">→</span></div>
+      </div>
+
+      <div class="topic-card card-binary-search" onclick="openTopic('binary-search')">
+        <span class="card-icon">🔍</span>
+        <div class="card-badge">SEARCH</div>
+        <div class="card-title">Binary Search</div>
+        <div class="card-desc">Watch the divide-and-conquer search strategy eliminate half the search space with every step.</div>
+        <div class="card-cta"><span>Explore</span> <span class="card-cta-arrow">→</span></div>
+      </div>
+
+      <div class="topic-card card-stacks" onclick="openTopic('stacks')">
+        <span class="card-icon">🗂️</span>
+        <div class="card-badge">LIFO</div>
+        <div class="card-title">Stacks</div>
+        <div class="card-desc">Push and pop elements in Last-In-First-Out order. See how stacks power undo systems and recursion.</div>
+        <div class="card-cta"><span>Explore</span> <span class="card-cta-arrow">→</span></div>
+      </div>
+
+      <div class="topic-card card-queue" onclick="openTopic('queue')">
+        <span class="card-icon">🎫</span>
+        <div class="card-badge">FIFO</div>
+        <div class="card-title">Queue</div>
+        <div class="card-desc">Enqueue and dequeue elements in First-In-First-Out order. Understand scheduling and BFS traversal.</div>
+        <div class="card-cta"><span>Explore</span> <span class="card-cta-arrow">→</span></div>
+      </div>
+
+      <div class="topic-card card-trees" onclick="openTopic('trees')">
+        <span class="card-icon">🌳</span>
+        <div class="card-badge">HIERARCHICAL</div>
+        <div class="card-title">Trees</div>
+        <div class="card-desc">Insert nodes into a Binary Search Tree and traverse with Inorder, Preorder, and Postorder algorithms.</div>
+        <div class="card-cta"><span>Explore</span> <span class="card-cta-arrow">→</span></div>
+      </div>
+
+      <div class="topic-card card-linked-lists" onclick="openTopic('linked-lists')">
+        <span class="card-icon">🔗</span>
+        <div class="card-badge">DYNAMIC</div>
+        <div class="card-title">Linked Lists</div>
+        <div class="card-desc">Build chains of nodes with pointers. Insert at head, tail, or position. Delete and search through the chain.</div>
+        <div class="card-cta"><span>Explore</span> <span class="card-cta-arrow">→</span></div>
+      </div>
+
+    </div>
+  </section>
+
+  <footer>
+    <p>DSA Visualizer &mdash; Learn Algorithms Through Interaction &mdash; Built for Learners</p>
+  </footer>
+</div>
+
+<!-- ==================== TOPIC PAGE ==================== -->
+<div id="topic-page">
+  <div class="topic-nav">
+    <button class="back-btn" onclick="goHome()">← Back</button>
+    <div class="topic-nav-title" id="topic-nav-title"></div>
+  </div>
+  <div class="topic-container">
+    <div class="sidebar" id="sidebar"></div>
+    <div class="viz-main" id="viz-main"></div>
+  </div>
+</div>
+
+<script>
+// ==================== ROUTING ====================
+function openTopic(topic) {
+  document.getElementById('home-page').style.display = 'none';
+  document.getElementById('topic-page').style.display = 'block';
+  window.scrollTo(0, 0);
+  loadTopic(topic);
+}
+
+function goHome() {
+  document.getElementById('home-page').style.display = 'block';
+  document.getElementById('topic-page').style.display = 'none';
+  clearTimeouts();
+}
+
+let timeoutIds = [];
+function safeTimeout(fn, ms) {
+  const id = setTimeout(fn, ms);
+  timeoutIds.push(id);
+  return id;
+}
+
+function clearTimeouts() {
+  timeoutIds.forEach(clearTimeout);
+  timeoutIds = [];
+}
+
+let animSpeed = 600;
+
+// ==================== TOPIC LOADER ====================
+function loadTopic(topic) {
+  clearTimeouts();
+  const topics = {
+    'arrays': loadArrays,
+    'binary-search': loadBinarySearch,
+    'stacks': loadStacks,
+    'queue': loadQueue,
+    'trees': loadTrees,
+    'linked-lists': loadLinkedLists
+  };
+  topics[topic]();
+}
+
+// ==================== LOG ====================
+function log(msg) {
+  const el = document.getElementById('op-log');
+  if (el) el.textContent = '> ' + msg;
+}
+
+// ==================== ARRAYS ====================
+function loadArrays() {
+  document.getElementById('topic-nav-title').textContent = 'Arrays';
+  let arr = [38, 27, 43, 15, 9, 51, 23, 64, 12, 47];
+
+  document.getElementById('sidebar').innerHTML = `
+    <div class="sidebar-section-title">Operations</div>
+    <button class="op-btn" onclick="arrInsert()">Insert Element</button>
+    <button class="op-btn" onclick="arrDelete()">Delete Last</button>
+    <button class="op-btn" onclick="arrSearch()">Linear Search</button>
+    <button class="op-btn" onclick="arrRandom()">Randomize</button>
+    <div class="sidebar-section-title">Sorting</div>
+    <button class="op-btn" onclick="bubbleSort()">Bubble Sort</button>
+    <button class="op-btn" onclick="selectionSort()">Selection Sort</button>
+    <button class="op-btn" onclick="insertionSort()">Insertion Sort</button>
+    <div class="speed-control">
+      <div class="speed-label"><span>SPEED</span><span id="speed-val">600ms</span></div>
+      <input type="range" min="100" max="1200" value="600" step="100"
+        oninput="animSpeed=parseInt(this.value);document.getElementById('speed-val').textContent=this.value+'ms'">
+    </div>
+  `;
+
+  document.getElementById('viz-main').innerHTML = `
+    <div class="viz-header">
+      <div>
+        <div class="viz-title">Arrays</div>
+        <div class="viz-subtitle">A contiguous block of memory storing elements of the same type.<br>Access any element in O(1) using its index.</div>
+        <div class="complexity-badges">
+          <span class="badge badge-time">Access: O(1)</span>
+          <span class="badge badge-time">Search: O(n)</span>
+          <span class="badge badge-time">Insert: O(n)</span>
+          <span class="badge badge-space">Space: O(n)</span>
+        </div>
+      </div>
+    </div>
+    <div class="input-row">
+      <input class="input-field" id="arr-input" type="number" placeholder="Enter a value (1-99)" min="1" max="99">
+      <button class="btn btn-primary" onclick="arrInsert()">Insert</button>
+      <button class="btn btn-secondary" onclick="arrSearch()">Search</button>
+      <button class="btn btn-secondary" onclick="arrRandom()">Randomize</button>
+    </div>
+    <div class="canvas-area" style="flex-direction:column; align-items:stretch;">
+      <div id="arr-bars" class="array-bars"></div>
+      <div id="arr-labels" style="display:flex;gap:4px;padding:0 0 0.5rem;"></div>
+    </div>
+    <div class="log-area" id="op-log">> Ready. Choose an operation or sort algorithm.</div>
+  `;
+
+  renderArr(arr);
+
+  window.arrData = arr;
+
+  window.arrInsert = function() {
+    const val = parseInt(document.getElementById('arr-input').value) || Math.floor(Math.random()*90)+10;
+    if (window.arrData.length >= 15) { log('Array full (max 15 elements)'); return; }
+    window.arrData.push(val);
+    renderArr(window.arrData);
+    log(`Inserted ${val} at index ${window.arrData.length - 1}`);
+  };
+
+  window.arrDelete = function() {
+    if (!window.arrData.length) { log('Array is empty!'); return; }
+    const v = window.arrData.pop();
+    renderArr(window.arrData);
+    log(`Deleted ${v} from end. Array length: ${window.arrData.length}`);
+  };
+
+  window.arrRandom = function() {
+    clearTimeouts();
+    window.arrData = Array.from({length: 10}, () => Math.floor(Math.random()*90)+5);
+    renderArr(window.arrData);
+    log('Array randomized.');
+  };
+
+  window.arrSearch = function() {
+    const val = parseInt(document.getElementById('arr-input').value);
+    if (isNaN(val)) { log('Enter a value to search'); return; }
+    clearTimeouts();
+    let i = 0;
+    function step() {
+      renderArr(window.arrData, [], [i], []);
+      if (window.arrData[i] === val) {
+        renderArr(window.arrData, [], [], [i]);
+        log(`Found ${val} at index ${i}!`);
+        return;
+      }
+      log(`Checking index ${i}: ${window.arrData[i]} ≠ ${val}`);
+      i++;
+      if (i < window.arrData.length) safeTimeout(step, animSpeed);
+      else { renderArr(window.arrData); log(`${val} not found in array.`); }
+    }
+    step();
+  };
+
+  window.bubbleSort = function() {
+    clearTimeouts();
+    let a = [...window.arrData];
+    let steps = [];
+    let n = a.length;
+    for (let i = 0; i < n-1; i++) {
+      for (let j = 0; j < n-i-1; j++) {
+        steps.push({type:'compare', i:j, j:j+1, arr:[...a]});
+        if (a[j] > a[j+1]) { [a[j],a[j+1]] = [a[j+1],a[j]]; steps.push({type:'swap', i:j, j:j+1, arr:[...a]}); }
+      }
+    }
+    steps.push({type:'done', arr:[...a]});
+    playSteps(steps, window.arrData);
+    window.arrData = a;
+  };
+
+  window.selectionSort = function() {
+    clearTimeouts();
+    let a = [...window.arrData];
+    let steps = [];
+    for (let i = 0; i < a.length; i++) {
+      let min = i;
+      for (let j = i+1; j < a.length; j++) {
+        steps.push({type:'compare', i:min, j:j, arr:[...a]});
+        if (a[j] < a[min]) min = j;
+      }
+      if (min !== i) { [a[i],a[min]] = [a[min],a[i]]; steps.push({type:'swap', i:i, j:min, arr:[...a]}); }
+    }
+    steps.push({type:'done', arr:[...a]});
+    playSteps(steps, window.arrData);
+    window.arrData = a;
+  };
+
+  window.insertionSort = function() {
+    clearTimeouts();
+    let a = [...window.arrData];
+    let steps = [];
+    for (let i = 1; i < a.length; i++) {
+      let j = i;
+      while (j > 0 && a[j-1] > a[j]) {
+        steps.push({type:'swap', i:j-1, j:j, arr:[...a]});
+        [a[j-1],a[j]] = [a[j],a[j-1]];
+        a = [...a];
+        steps[steps.length-1].arr = [...a];
+        j--;
+      }
+    }
+    steps.push({type:'done', arr:[...a]});
+    playSteps(steps, window.arrData);
+    window.arrData = a;
+  };
+
+  function playSteps(steps, origArr) {
+    let idx = 0;
+    function next() {
+      if (idx >= steps.length) return;
+      const s = steps[idx];
+      if (s.type === 'compare') { renderArr(s.arr, [], [s.i, s.j], []); log(`Comparing index ${s.i}(${s.arr[s.i]}) and ${s.j}(${s.arr[s.j]})`); }
+      else if (s.type === 'swap') { renderArr(s.arr, [s.i, s.j], [], []); log(`Swapped ${s.arr[s.j]} ↔ ${s.arr[s.i]}`); }
+      else { renderArr(s.arr, [], [], [...Array(s.arr.length).keys()]); log('Sorting complete! ✓'); }
+      idx++;
+      if (idx < steps.length) safeTimeout(next, animSpeed);
+    }
+    next();
+  }
+
+  function renderArr(arr, swapping=[], comparing=[], found=[]) {
+    const maxV = Math.max(...arr, 1);
+    const barsEl = document.getElementById('arr-bars');
+    const labelsEl = document.getElementById('arr-labels');
+    if (!barsEl) return;
+    barsEl.innerHTML = '';
+    labelsEl.innerHTML = '';
+    arr.forEach((v, i) => {
+      const bar = document.createElement('div');
+      bar.className = 'arr-bar';
+      if (swapping.includes(i)) bar.classList.add('swapping');
+      else if (found.includes(i)) bar.classList.add('found');
+      else if (comparing.includes(i)) bar.classList.add('comparing');
+      bar.style.height = `${(v / maxV) * 220}px`;
+      bar.title = v;
+      barsEl.appendChild(bar);
+      const lbl = document.createElement('div');
+      lbl.className = 'arr-label';
+      lbl.style.flex = '1';
+      lbl.textContent = v;
+      labelsEl.appendChild(lbl);
+    });
+  }
+}
+
+// ==================== BINARY SEARCH ====================
+function loadBinarySearch() {
+  document.getElementById('topic-nav-title').textContent = 'Binary Search';
+  let bsArr = [3, 8, 12, 19, 25, 31, 40, 52, 61, 73, 88, 94];
+
+  document.getElementById('sidebar').innerHTML = `
+    <div class="sidebar-section-title">Operations</div>
+    <button class="op-btn" onclick="runBS()">Run Binary Search</button>
+    <button class="op-btn" onclick="resetBS()">Reset</button>
+    <div class="sidebar-section-title">Info</div>
+    <div style="font-size:0.8rem;color:var(--text2);line-height:1.6;font-family:'Space Mono',monospace;">
+      <p>🟡 Mid element</p><br>
+      <p>🔵 Active range</p><br>
+      <p>🟢 Found!</p><br>
+      <p>⬛ Eliminated</p>
+    </div>
+    <div class="speed-control">
+      <div class="speed-label"><span>SPEED</span><span id="speed-val">600ms</span></div>
+      <input type="range" min="200" max="1500" value="600" step="100"
+        oninput="animSpeed=parseInt(this.value);document.getElementById('speed-val').textContent=this.value+'ms'">
+    </div>
+  `;
+
+  document.getElementById('viz-main').innerHTML = `
+    <div class="viz-header">
+      <div>
+        <div class="viz-title">Binary Search</div>
+        <div class="viz-subtitle">Efficiently search a sorted array by halving the search space each step.<br>
+        Requires a sorted array. Eliminates half of remaining elements per iteration.</div>
+        <div class="complexity-badges">
+          <span class="badge badge-time">Time: O(log n)</span>
+          <span class="badge badge-space">Space: O(1)</span>
+        </div>
+      </div>
+    </div>
+    <div class="input-row">
+      <input class="input-field" id="bs-input" type="number" placeholder="Enter value to search (e.g. 40)">
+      <button class="btn btn-primary" onclick="runBS()">Search</button>
+      <button class="btn btn-secondary" onclick="resetBS()">Reset</button>
+    </div>
+    <div class="canvas-area" style="flex-direction:column;">
+      <div class="bs-row" id="bs-cells"></div>
+    </div>
+    <div class="log-area" id="op-log">> Enter a value from the array and press Search.</div>
+  `;
+
+  renderBS(bsArr, -1, -1, bsArr.length-1, -1, []);
+
+  window.resetBS = function() {
+    clearTimeouts();
+    renderBS(bsArr, -1, -1, bsArr.length-1, -1, []);
+    log('Reset. Enter a target value to search.');
+  };
+
+  window.runBS = function() {
+    clearTimeouts();
+    const target = parseInt(document.getElementById('bs-input').value);
+    if (isNaN(target)) { log('Please enter a number to search'); return; }
+    let lo = 0, hi = bsArr.length - 1;
+    let steps = [];
+    let tempArr = [...bsArr];
+    while (lo <= hi) {
+      let mid = Math.floor((lo+hi)/2);
+      steps.push({lo, hi, mid, eliminated: steps.length > 0 ? steps[steps.length-1].eliminated || [] : []});
+      if (bsArr[mid] === target) { steps.push({lo, hi, mid, found: true}); break; }
+      else if (bsArr[mid] < target) { lo = mid + 1; steps.push({lo:mid, hi, mid, notFound:true}); }
+      else { hi = mid - 1; steps.push({lo, hi:mid, mid, notFound:true}); }
+    }
+    if (steps.length === 0 || !steps[steps.length-1].found) steps.push({lo:-1, hi:-1, mid:-1, notFound:true, msg:'Not found'});
+    
+    let eliminated = [];
+    let sIdx = 0;
+    function playBSStep() {
+      if (sIdx >= steps.length) return;
+      const s = steps[sIdx];
+      if (s.found) { renderBS(bsArr, s.lo, s.hi, s.hi, s.mid, eliminated); log(`Found ${target} at index ${s.mid}! 🎉`); return; }
+      if (s.msg) { renderBS(bsArr, -1, -1, -1, -1, [...Array(bsArr.length).keys()]); log(`${target} not found in array.`); return; }
+      renderBS(bsArr, s.lo, s.hi, s.hi, s.mid, eliminated);
+      if (s.notFound) {
+        const mid = s.mid;
+        if (bsArr[mid] < target) { for(let k=0;k<=mid;k++) if(!eliminated.includes(k)) eliminated.push(k); log(`${bsArr[mid]} < ${target} → search RIGHT half`); }
+        else { for(let k=mid;k<bsArr.length;k++) if(!eliminated.includes(k)) eliminated.push(k); log(`${bsArr[mid]} > ${target} → search LEFT half`); }
+      } else { log(`Checking mid index ${s.mid}: ${bsArr[s.mid]}`); }
+      sIdx++;
+      safeTimeout(playBSStep, animSpeed);
+    }
+    playBSStep();
+  };
+
+  function renderBS(arr, lo, hi, _hi2, mid, eliminated) {
+    const el = document.getElementById('bs-cells');
+    if (!el) return;
+    el.innerHTML = '';
+    arr.forEach((v, i) => {
+      const cell = document.createElement('div');
+      cell.className = 'bs-cell';
+      cell.innerHTML = `<span class="cell-val">${v}</span><span class="cell-idx">[${i}]</span>`;
+      if (eliminated.includes(i)) cell.classList.add('eliminated');
+      else if (i === mid) cell.classList.add('mid');
+      else if (i >= lo && i <= hi) cell.classList.add('active-range');
+      el.appendChild(cell);
+    });
+  }
+}
+
+// ==================== STACKS ====================
+function loadStacks() {
+  document.getElementById('topic-nav-title').textContent = 'Stacks';
+  let stack = [];
+
+  document.getElementById('sidebar').innerHTML = `
+    <div class="sidebar-section-title">Operations</div>
+    <button class="op-btn" onclick="stackPush()">Push</button>
+    <button class="op-btn" onclick="stackPop()">Pop</button>
+    <button class="op-btn" onclick="stackPeek()">Peek (Top)</button>
+    <button class="op-btn" onclick="stackClear()">Clear Stack</button>
+    <div class="sidebar-section-title">Stack Info</div>
+    <div style="font-size:0.8rem;color:var(--text2);line-height:1.8;font-family:'Space Mono',monospace;">
+      <div>Size: <span id="stack-size" style="color:var(--accent3)">0</span></div>
+      <div>Top: <span id="stack-top-val" style="color:var(--accent2)">—</span></div>
+      <div>Empty: <span id="stack-empty" style="color:var(--accent4)">Yes</span></div>
+    </div>
+  `;
+
+  document.getElementById('viz-main').innerHTML = `
+    <div class="viz-header">
+      <div>
+        <div class="viz-title">Stack</div>
+        <div class="viz-subtitle">Last-In-First-Out (LIFO) data structure.<br>Push adds to top; Pop removes from top.</div>
+        <div class="complexity-badges">
+          <span class="badge badge-time">Push: O(1)</span>
+          <span class="badge badge-time">Pop: O(1)</span>
+          <span class="badge badge-time">Peek: O(1)</span>
+          <span class="badge badge-space">Space: O(n)</span>
+        </div>
+      </div>
+    </div>
+    <div class="input-row">
+      <input class="input-field" id="stack-input" type="text" placeholder="Value to push (e.g. 42)">
+      <button class="btn btn-primary" onclick="stackPush()">Push</button>
+      <button class="btn btn-danger" onclick="stackPop()">Pop</button>
+      <button class="btn btn-secondary" onclick="stackPeek()">Peek</button>
+    </div>
+    <div class="canvas-area" style="justify-content:center; flex-direction:column; gap:0; align-items:center;">
+      <div id="stack-container" style="display:flex;flex-direction:column;align-items:center;gap:0;min-height:200px;justify-content:flex-end;">
+        <div class="empty-state"><span class="empty-icon">📭</span>Stack is empty.<br>Push an element!</div>
+      </div>
+      <div class="stack-base" style="width:220px;margin-top:0;"></div>
+    </div>
+    <div class="log-area" id="op-log">> Stack ready. Push to add, Pop to remove.</div>
+  `;
+
+  function updateInfo() {
+    document.getElementById('stack-size').textContent = stack.length;
+    document.getElementById('stack-top-val').textContent = stack.length ? stack[stack.length-1] : '—';
+    document.getElementById('stack-empty').textContent = stack.length ? 'No' : 'Yes';
+  }
+
+  function renderStack() {
+    const c = document.getElementById('stack-container');
+    if (!c) return;
+    if (stack.length === 0) {
+      c.innerHTML = '<div class="empty-state"><span class="empty-icon">📭</span>Stack is empty.</div>';
+      updateInfo(); return;
+    }
+    c.innerHTML = '';
+    // Render top label
+    const topLabel = document.createElement('div');
+    topLabel.className = 'stack-top-label';
+    topLabel.textContent = '← TOP';
+    c.appendChild(topLabel);
+    // Render items (top to bottom visually, first = top)
+    [...stack].reverse().forEach((val, ri) => {
+      const item = document.createElement('div');
+      item.className = 'stack-item';
+      item.textContent = val;
+      c.appendChild(item);
+    });
+    updateInfo();
+  }
+
+  window.stackPush = function() {
+    const val = document.getElementById('stack-input').value.trim() || Math.floor(Math.random()*90+10);
+    if (stack.length >= 8) { log('Stack overflow! Max size 8.'); return; }
+    stack.push(val);
+    renderStack();
+    log(`Pushed "${val}" onto the stack. Size: ${stack.length}`);
+  };
+
+  window.stackPop = function() {
+    if (!stack.length) { log('Stack underflow! Cannot pop from empty stack.'); return; }
+    const val = stack.pop();
+    renderStack();
+    log(`Popped "${val}" from the stack. Size: ${stack.length}`);
+  };
+
+  window.stackPeek = function() {
+    if (!stack.length) { log('Stack is empty — nothing to peek.'); return; }
+    log(`Peek: Top element is "${stack[stack.length-1]}" (not removed)`);
+  };
+
+  window.stackClear = function() {
+    stack = [];
+    renderStack();
+    log('Stack cleared.');
+  };
+}
+
+// ==================== QUEUE ====================
+function loadQueue() {
+  document.getElementById('topic-nav-title').textContent = 'Queue';
+  let queue = [];
+
+  document.getElementById('sidebar').innerHTML = `
+    <div class="sidebar-section-title">Operations</div>
+    <button class="op-btn" onclick="queueEnqueue()">Enqueue (Add)</button>
+    <button class="op-btn" onclick="queueDequeue()">Dequeue (Remove)</button>
+    <button class="op-btn" onclick="queueFront()">Peek Front</button>
+    <button class="op-btn" onclick="queueClear()">Clear Queue</button>
+    <div class="sidebar-section-title">Queue Info</div>
+    <div style="font-size:0.8rem;color:var(--text2);line-height:1.8;font-family:'Space Mono',monospace;">
+      <div>Size: <span id="q-size" style="color:var(--accent3)">0</span></div>
+      <div>Front: <span id="q-front" style="color:var(--accent2)">—</span></div>
+      <div>Rear: <span id="q-rear" style="color:var(--accent4)">—</span></div>
+    </div>
+  `;
+
+  document.getElementById('viz-main').innerHTML = `
+    <div class="viz-header">
+      <div>
+        <div class="viz-title">Queue</div>
+        <div class="viz-subtitle">First-In-First-Out (FIFO) data structure.<br>Enqueue adds to rear; Dequeue removes from front.</div>
+        <div class="complexity-badges">
+          <span class="badge badge-time">Enqueue: O(1)</span>
+          <span class="badge badge-time">Dequeue: O(1)</span>
+          <span class="badge badge-time">Peek: O(1)</span>
+          <span class="badge badge-space">Space: O(n)</span>
+        </div>
+      </div>
+    </div>
+    <div class="input-row">
+      <input class="input-field" id="q-input" type="text" placeholder="Value to enqueue">
+      <button class="btn btn-primary" onclick="queueEnqueue()">Enqueue</button>
+      <button class="btn btn-danger" onclick="queueDequeue()">Dequeue</button>
+      <button class="btn btn-secondary" onclick="queueFront()">Peek</button>
+    </div>
+    <div class="canvas-area" style="flex-direction:column;align-items:stretch; gap:0.5rem;">
+      <div class="queue-labels" id="q-labels" style="display:none;">
+        <span style="color:var(--accent3)">← DEQUEUE (Front)</span>
+        <span style="color:var(--accent4)">ENQUEUE → (Rear)</span>
+      </div>
+      <div id="queue-container" style="display:flex;align-items:center;width:100%;min-height:80px;overflow-x:auto;">
+        <div class="empty-state"><span class="empty-icon">🕳️</span>Queue is empty.<br>Enqueue an element!</div>
+      </div>
+    </div>
+    <div class="log-area" id="op-log">> Queue ready. Enqueue to add, Dequeue to remove.</div>
+  `;
+
+  function updateInfo() {
+    document.getElementById('q-size').textContent = queue.length;
+    document.getElementById('q-front').textContent = queue.length ? queue[0] : '—';
+    document.getElementById('q-rear').textContent = queue.length ? queue[queue.length-1] : '—';
+  }
+
+  function renderQueue() {
+    const c = document.getElementById('queue-container');
+    const lbl = document.getElementById('q-labels');
+    if (!c) return;
+    if (queue.length === 0) {
+      c.innerHTML = '<div class="empty-state"><span class="empty-icon">🕳️</span>Queue is empty.</div>';
+      lbl.style.display = 'none';
+      updateInfo(); return;
+    }
+    lbl.style.display = 'flex';
+    c.innerHTML = '';
+    queue.forEach((val, i) => {
+      const item = document.createElement('div');
+      item.className = 'queue-item';
+      item.textContent = val;
+      c.appendChild(item);
+    });
+    updateInfo();
+  }
+
+  window.queueEnqueue = function() {
+    if (queue.length >= 8) { log('Queue full (max 8).'); return; }
+    const val = document.getElementById('q-input').value.trim() || Math.floor(Math.random()*90+10);
+    queue.push(val);
+    renderQueue();
+    log(`Enqueued "${val}" at rear. Size: ${queue.length}`);
+  };
+
+  window.queueDequeue = function() {
+    if (!queue.length) { log('Queue is empty — cannot dequeue.'); return; }
+    const val = queue.shift();
+    renderQueue();
+    log(`Dequeued "${val}" from front. Size: ${queue.length}`);
+  };
+
+  window.queueFront = function() {
+    if (!queue.length) { log('Queue is empty.'); return; }
+    log(`Front element: "${queue[0]}" (not removed)`);
+  };
+
+  window.queueClear = function() {
+    queue = [];
+    renderQueue();
+    log('Queue cleared.');
+  };
+}
+
+// ==================== TREES ====================
+function loadTrees() {
+  document.getElementById('topic-nav-title').textContent = 'Binary Search Trees';
+  let root = null;
+
+  document.getElementById('sidebar').innerHTML = `
+    <div class="sidebar-section-title">Operations</div>
+    <button class="op-btn" onclick="treeInsert()">Insert Node</button>
+    <button class="op-btn" onclick="treeSearch()">Search Node</button>
+    <button class="op-btn" onclick="treeClear()">Clear Tree</button>
+    <div class="sidebar-section-title">Traversals</div>
+    <button class="op-btn" onclick="treeInorder()">Inorder (L→Root→R)</button>
+    <button class="op-btn" onclick="treePreorder()">Preorder (Root→L→R)</button>
+    <button class="op-btn" onclick="treePostorder()">Postorder (L→R→Root)</button>
+    <div class="sidebar-section-title">Traversal Result</div>
+    <div id="trav-result" style="font-family:'Space Mono',monospace;font-size:0.75rem;color:var(--text2);line-height:1.6;"></div>
+    <div class="speed-control">
+      <div class="speed-label"><span>SPEED</span><span id="speed-val">500ms</span></div>
+      <input type="range" min="200" max="1200" value="500" step="100"
+        oninput="animSpeed=parseInt(this.value);document.getElementById('speed-val').textContent=this.value+'ms'">
+    </div>
+  `;
+
+  document.getElementById('viz-main').innerHTML = `
+    <div class="viz-header">
+      <div>
+        <div class="viz-title">Binary Search Tree</div>
+        <div class="viz-subtitle">Each node has at most 2 children. Left subtree values &lt; node. Right subtree values &gt; node.</div>
+        <div class="complexity-badges">
+          <span class="badge badge-time">Insert: O(h)</span>
+          <span class="badge badge-time">Search: O(h)</span>
+          <span class="badge badge-time">h = O(log n) avg</span>
+          <span class="badge badge-space">Space: O(n)</span>
+        </div>
+      </div>
+    </div>
+    <div class="input-row">
+      <input class="input-field" id="tree-input" type="number" placeholder="Node value to insert/search">
+      <button class="btn btn-primary" onclick="treeInsert()">Insert</button>
+      <button class="btn btn-secondary" onclick="treeSearch()">Search</button>
+      <button class="btn btn-danger" onclick="treeClear()">Clear</button>
+    </div>
+    <div class="canvas-area" style="padding:1rem;">
+      <div class="tree-canvas" id="tree-canvas">
+        <div class="empty-state"><span class="empty-icon">🌱</span>Tree is empty.<br>Insert a node to begin!</div>
+      </div>
+    </div>
+    <div class="log-area" id="op-log">> Insert nodes to build your BST.</div>
+  `;
+
+  // BST node
+  function Node(val) { return {val, left:null, right:null}; }
+
+  function insert(node, val) {
+    if (!node) return Node(val);
+    if (val < node.val) node.left = insert(node.left, val);
+    else if (val > node.val) node.right = insert(node.right, val);
+    return node;
+  }
+
+  function getPositions(node, x, y, dx) {
+    if (!node) return [];
+    let res = [{val: node.val, x, y}];
+    if (node.left) res = res.concat(getPositions(node.left, x-dx, y+70, dx*0.55));
+    if (node.right) res = res.concat(getPositions(node.right, x+dx, y+70, dx*0.55));
+    return res;
+  }
+
+  function getEdges(node, x, y, dx) {
+    if (!node) return [];
+    let res = [];
+    if (node.left) { res.push({x1:x,y1:y,x2:x-dx,y2:y+70}); res=res.concat(getEdges(node.left,x-dx,y+70,dx*0.55)); }
+    if (node.right) { res.push({x1:x,y1:y,x2:x+dx,y2:y+70}); res=res.concat(getEdges(node.right,x+dx,y+70,dx*0.55)); }
+    return res;
+  }
+
+  function renderTree(highlight=[]) {
+    const c = document.getElementById('tree-canvas');
+    if (!c) return;
+    if (!root) { c.innerHTML = '<div class="empty-state"><span class="empty-icon">🌱</span>Tree is empty.<br>Insert a node!</div>'; return; }
+    const W = 700, H = 280;
+    const positions = getPositions(root, W/2, 40, 130);
+    const edges = getEdges(root, W/2, 40, 130);
+    let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
+    edges.forEach(e => {
+      svg += `<line class="tree-edge" x1="${e.x1}" y1="${e.y1}" x2="${e.x2}" y2="${e.y2}"/>`;
+    });
+    positions.forEach(p => {
+      const isHL = highlight.includes(p.val);
+      svg += `<g class="tree-node${isHL?' highlighted':''}">
+        <circle cx="${p.x}" cy="${p.y}" r="22"/>
+        <text x="${p.x}" y="${p.y}">${p.val}</text>
+      </g>`;
+    });
+    svg += '</svg>';
+    c.innerHTML = svg;
+  }
+
+  window.treeInsert = function() {
+    const val = parseInt(document.getElementById('tree-input').value);
+    if (isNaN(val)) { log('Enter a number to insert'); return; }
+    root = insert(root, val);
+    renderTree();
+    log(`Inserted ${val} into BST.`);
+  };
+
+  window.treeClear = function() {
+    root = null;
+    renderTree();
+    document.getElementById('trav-result').innerHTML = '';
+    log('Tree cleared.');
+  };
+
+  window.treeSearch = function() {
+    const val = parseInt(document.getElementById('tree-input').value);
+    if (isNaN(val) || !root) { log('Enter a value and build a tree first'); return; }
+    clearTimeouts();
+    let path = [];
+    let node = root;
+    while (node) {
+      path.push(node.val);
+      if (node.val === val) break;
+      node = val < node.val ? node.left : node.right;
+    }
+    let i = 0;
+    function step() {
+      renderTree(path.slice(0, i+1));
+      if (path[i] === val) { log(`Found ${val}! Steps: ${i+1}`); return; }
+      log(`${path[i]} ${val < path[i] ? '> target → go left' : '< target → go right'}`);
+      i++;
+      if (i < path.length) safeTimeout(step, animSpeed);
+      else { renderTree(); log(`${val} not found.`); }
+    }
+    step();
+  };
+
+  function inorder(node, res=[]) { if(node){inorder(node.left,res);res.push(node.val);inorder(node.right,res);} return res; }
+  function preorder(node, res=[]) { if(node){res.push(node.val);preorder(node.left,res);preorder(node.right,res);} return res; }
+  function postorder(node, res=[]) { if(node){postorder(node.left,res);postorder(node.right,res);res.push(node.val);} return res; }
+
+  function animateTraversal(order, label) {
+    clearTimeouts();
+    const tr = document.getElementById('trav-result');
+    if (!root) { log('Build a tree first!'); return; }
+    tr.innerHTML = `<div style="color:var(--text3);margin-bottom:0.5rem;">${label}:</div><div class="traversal-order" id="trav-steps"></div>`;
+    let i = 0;
+    function step() {
+      renderTree([order[i]]);
+      const s = document.createElement('span');
+      s.className = 'trav-step';
+      s.textContent = order[i];
+      document.getElementById('trav-steps')?.appendChild(s);
+      log(`Visiting: ${order[i]}`);
+      i++;
+      if (i < order.length) safeTimeout(step, animSpeed);
+      else { renderTree(); log(`${label} complete: ${order.join(' → ')}`); }
+    }
+    step();
+  }
+
+  window.treeInorder = function() { animateTraversal(inorder(root), 'Inorder'); };
+  window.treePreorder = function() { animateTraversal(preorder(root), 'Preorder'); };
+  window.treePostorder = function() { animateTraversal(postorder(root), 'Postorder'); };
+
+  // Insert some starter nodes
+  [50, 30, 70, 20, 40, 60, 80].forEach(v => { root = insert(root, v); });
+  renderTree();
+  log('Sample BST loaded. Try inserting, searching, or traversing!');
+}
+
+// ==================== LINKED LISTS ====================
+function loadLinkedLists() {
+  document.getElementById('topic-nav-title').textContent = 'Linked Lists';
+  let list = [];
+
+  document.getElementById('sidebar').innerHTML = `
+    <div class="sidebar-section-title">Insert</div>
+    <button class="op-btn" onclick="llInsertHead()">Insert at Head</button>
+    <button class="op-btn" onclick="llInsertTail()">Insert at Tail</button>
+    <button class="op-btn" onclick="llInsertPos()">Insert at Position</button>
+    <div class="sidebar-section-title">Delete</div>
+    <button class="op-btn" onclick="llDeleteHead()">Delete Head</button>
+    <button class="op-btn" onclick="llDeleteTail()">Delete Tail</button>
+    <button class="op-btn" onclick="llDeleteVal()">Delete by Value</button>
+    <div class="sidebar-section-title">Other</div>
+    <button class="op-btn" onclick="llSearch()">Search Value</button>
+    <button class="op-btn" onclick="llReverse()">Reverse List</button>
+    <button class="op-btn" onclick="llClear()">Clear List</button>
+    <div style="margin-top:1rem;font-family:'Space Mono',monospace;font-size:0.75rem;color:var(--text2);">
+      Size: <span id="ll-size" style="color:var(--accent6)">0</span>
+    </div>
+  `;
+
+  document.getElementById('viz-main').innerHTML = `
+    <div class="viz-header">
+      <div>
+        <div class="viz-title">Linked List</div>
+        <div class="viz-subtitle">Dynamic data structure of nodes, each pointing to the next.<br>
+        No contiguous memory required — nodes can be anywhere in memory.</div>
+        <div class="complexity-badges">
+          <span class="badge badge-time">Insert Head: O(1)</span>
+          <span class="badge badge-time">Insert Tail: O(n)</span>
+          <span class="badge badge-time">Search: O(n)</span>
+          <span class="badge badge-space">Space: O(n)</span>
+        </div>
+      </div>
+    </div>
+    <div class="input-row">
+      <input class="input-field" id="ll-input" type="text" placeholder="Node value">
+      <input class="input-field" id="ll-pos" type="number" placeholder="Position (for insert/delete)" min="0" style="max-width:200px;">
+      <button class="btn btn-primary" onclick="llInsertTail()">Add to Tail</button>
+      <button class="btn btn-secondary" onclick="llSearch()">Search</button>
+    </div>
+    <div class="canvas-area" style="flex-direction:column; align-items:flex-start; overflow:auto; min-height:160px;">
+      <div id="ll-canvas" class="ll-canvas">
+        <div class="empty-state"><span class="empty-icon">🔗</span>List is empty.<br>Insert a node!</div>
+      </div>
+    </div>
+    <div class="log-area" id="op-log">> Linked list ready. Insert nodes to begin!</div>
+  `;
+
+  function renderLL(activeIdx=-1) {
+    const c = document.getElementById('ll-canvas');
+    const sz = document.getElementById('ll-size');
+    if (!c) return;
+    if (sz) sz.textContent = list.length;
+    if (list.length === 0) {
+      c.innerHTML = '<div class="empty-state"><span class="empty-icon">🔗</span>List is empty.</div>';
+      return;
+    }
+    c.innerHTML = '';
+    list.forEach((val, i) => {
+      const node = document.createElement('div');
+      node.className = 'll-node';
+      const box = document.createElement('div');
+      box.className = 'll-box';
+      if (i === 0) box.classList.add('head-node');
+      if (i === list.length-1) box.classList.add('tail-node');
+      if (i === activeIdx) box.classList.add('active');
+      const lbl = i === 0 ? 'head' : i === list.length-1 ? 'tail' : `[${i}]`;
+      box.innerHTML = `<span class="node-val">${val}</span><span class="node-lbl">${lbl}</span>`;
+      node.appendChild(box);
+      if (i < list.length-1) {
+        const arrow = document.createElement('div');
+        arrow.className = 'll-arrow';
+        arrow.textContent = '→';
+        node.appendChild(arrow);
+      }
+      c.appendChild(node);
+    });
+    const nullNode = document.createElement('div');
+    nullNode.className = 'll-node';
+    const arr2 = document.createElement('div');
+    arr2.className = 'll-arrow';
+    arr2.textContent = '→';
+    const nullBox = document.createElement('div');
+    nullBox.className = 'll-null';
+    nullBox.textContent = 'NULL';
+    nullNode.appendChild(arr2);
+    nullNode.appendChild(nullBox);
+    c.appendChild(nullNode);
+  }
+
+  window.llInsertHead = function() {
+    const val = document.getElementById('ll-input').value.trim() || Math.floor(Math.random()*90+10);
+    list.unshift(val);
+    renderLL(0);
+    log(`Inserted "${val}" at head. Size: ${list.length}`);
+  };
+
+  window.llInsertTail = function() {
+    const val = document.getElementById('ll-input').value.trim() || Math.floor(Math.random()*90+10);
+    list.push(val);
+    renderLL(list.length-1);
+    log(`Inserted "${val}" at tail. Size: ${list.length}`);
+  };
+
+  window.llInsertPos = function() {
+    const val = document.getElementById('ll-input').value.trim() || '?';
+    const pos = parseInt(document.getElementById('ll-pos').value);
+    if (isNaN(pos) || pos < 0 || pos > list.length) { log(`Invalid position. Valid: 0 to ${list.length}`); return; }
+    list.splice(pos, 0, val);
+    renderLL(pos);
+    log(`Inserted "${val}" at position ${pos}. Size: ${list.length}`);
+  };
+
+  window.llDeleteHead = function() {
+    if (!list.length) { log('List is empty.'); return; }
+    const val = list.shift();
+    renderLL();
+    log(`Deleted head "${val}". Size: ${list.length}`);
+  };
+
+  window.llDeleteTail = function() {
+    if (!list.length) { log('List is empty.'); return; }
+    const val = list.pop();
+    renderLL();
+    log(`Deleted tail "${val}". Size: ${list.length}`);
+  };
+
+  window.llDeleteVal = function() {
+    const val = document.getElementById('ll-input').value.trim();
+    if (!val) { log('Enter a value to delete.'); return; }
+    const idx = list.indexOf(val);
+    if (idx === -1) { log(`"${val}" not found in list.`); return; }
+    list.splice(idx, 1);
+    renderLL();
+    log(`Deleted "${val}" at index ${idx}. Size: ${list.length}`);
+  };
+
+  window.llSearch = function() {
+    clearTimeouts();
+    const val = document.getElementById('ll-input').value.trim();
+    if (!val) { log('Enter a value to search'); return; }
+    let i = 0;
+    function step() {
+      renderLL(i);
+      if (list[i] == val) { log(`Found "${val}" at index ${i}! 🎉`); return; }
+      log(`Checking index ${i}: "${list[i]}" ≠ "${val}"`);
+      i++;
+      if (i < list.length) safeTimeout(step, animSpeed);
+      else { renderLL(); log(`"${val}" not found.`); }
+    }
+    if (!list.length) { log('List is empty.'); return; }
+    step();
+  };
+
+  window.llReverse = function() {
+    list.reverse();
+    renderLL();
+    log('List reversed! Head and tail swapped.');
+  };
+
+  window.llClear = function() {
+    list = [];
+    renderLL();
+    log('List cleared.');
+  };
+
+  // Insert starter nodes
+  ['12', '35', '58', '7', '91'].forEach(v => list.push(v));
+  renderLL();
+  log('Sample linked list loaded. Try inserting, deleting, or searching!');
+}
+</script>
+</body>
+</html>
